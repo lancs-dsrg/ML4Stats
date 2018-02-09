@@ -29,7 +29,7 @@ def grab_page(retries = 5):
     # If error thrown, retry and reduce retry counter
     except (wiki.exceptions.DisambiguationError, wiki.exceptions.PageError):
         if retries > 1:
-            grab_page(retries - 1)
+            page = grab_page(retries - 1)
         else:
             raise ValueError("Reached max number of retries")
     return page
