@@ -1,21 +1,73 @@
 # This file gives an example solution for you to compare to.
+import numpy as np
 import cPickle as pickle
 import re
+import sys
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation as LDA
 
 
-def create_bow(docs):
-    vectorizer = CountVectorizer(max_features = 1000) 
-    train = vectorizer.fit_transform(docs)
+def fit_lda():
+    train, test, idx2words = bow_from_docs()
+    stepsize = tune_lda(train, test)
+    # Run again with best stepsize for longer
+    print "Training full model..."
+    m = LDA(learning_method = 'batch', max_iter = 100)
+    m.fit(train)
+    # Return fitted model and report perplexity on test
+    print "Perplexity of final model: {0}\n".format(m.perplexity(test))
+    report_results(m.components_, idx2words)
+
+
+def report_results(topic_words, idx2words):
+    """Get 10 most popular word indexes associated with each topic discovered"""
+    n_topics = topic_words.shape[0]
+    for i in xrange(n_topics):
+        idxs_curr = topic_words[i,:].argsort()[-10:][::-1]
+        print "Topic {0}: {1}\n".format(i + 1, " ".join([idx2words[i] for i in idxs_curr]))
+
+
+def tune_lda(train, test):
+    """
+    Find stepsize from a prespecified set that minimizes test perplexity 
+    (normally we might tune more constants but this serves as a demonstration)
+    """
+    decays = [0.7, 0.5, 0.1, 0.05, 0.01]
+    sys.stdout.write("Tuning stepsizes (of {0}): ".format(len(decays)))
+    scores = np.zeros(len(decays))
+    for i, decay in enumerate(decays):
+        sys.stdout.write("{0} ".format(i + 1))
+        sys.stdout.flush()
+        m = LDA(learning_method = 'batch')
+        m.fit(train)
+        scores[i] = m.perplexity(test)
+    sys.stdout.write("\n")
+    # Find best stepsize and return
+    return decays[np.argmin(np.array(scores))]
+
+
+def bow_from_docs():
+    """Create bag of words from train and test documents"""
+    train, test = open_datasets()
+    # Combine train and test set while prepping docs
+    size_test = len(test)
+    dataset = train + test
+    dataset, idx2words = prep_docs(dataset)
+    # Resplit train and test set ready for training
+    train = dataset[:-size_test]
+    test = dataset[-size_test:]
+    return train, test, idx2words
 
 
 def prep_docs(docs):
-    """Prepare documents to be converted to bag of words"""
+    """Prepare documents then convert to bag of words representation"""
     # Convert stopwords to set for speed
     stopws = set(stopwords.words("english"))
     data = [clean_doc(doc, stopws) for doc in docs]
-    return data
+    vectorizer = CountVectorizer(max_features = 1000) 
+    bow = vectorizer.fit_transform(data)
+    return bow, vectorizer.get_feature_names()
 
 
 def clean_doc(doc, stopws):
@@ -29,13 +81,13 @@ def clean_doc(doc, stopws):
     return " ".join([word for word in doc.split() if word not in stopws])
 
 
-def open_dataset():
+def open_datasets():
     with open('docs.pkl', 'rb') as infile:
-        data = pickle.load(infile)
-    return data
+        train = pickle.load(infile)
+    with open('test.pkl', 'rb') as infile:
+        test = pickle.load(infile)
+    return train, test
 
 
 if __name__ == '__main__':
-    data = open_dataset()
-    data = prep_docs(data)
-    create_bow(data)
+    fit_lda()
