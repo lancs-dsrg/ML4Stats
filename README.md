@@ -6,7 +6,7 @@ Brief intro to some less familiar ML concepts for statisticians. Slides for the 
 
 - Install python on your machine (preferably 2)
 - Install the following python packages: `wikipedia`, `nltk`, `sklearn`
-- Clone this repo and run `python scrape_wiki.py` which will download 1000 wikipedia documents onto your machine. If it doesn't work let me know. This will take a while as it's quite a slow way of doing things so leave some time! Will bring a spare dataset to the session just in case someone doesn't get a chance to download.
+- Clone this repo and run `python scrape_wiki.py` which will download 1000 wikipedia documents onto your machine. If it doesn't work let me know. This will take a while as it's quite a slow way of doing things so leave some time! I've uploaded a spare dataset `docs.pkl` in case anyone couldn't download!
 
 ## What we'll be doing
 
