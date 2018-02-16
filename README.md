@@ -13,4 +13,5 @@ Brief intro to some less familiar ML concepts for statisticians. Slides for the 
 - Starting point is `open_dataset.py` which demos how to open a python 'pickle' file
 - We'll work through the sections *Data Cleaning* and *Creating Features* from [this Kaggle tutorial](https://www.kaggle.com/c/word2vec-nlp-tutorial#part-1-for-beginners-bag-of-words). This will allow us to create the bag of words dataset.
 - Next we'll use the `sklearn` package [LDA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html) to perform LDA on our datasets. We'll use our dictionaries to look at our resulting topics.
-- I'll provide a test set, and the one who gets the best log predictive score (perplexity) wins :).
+- I've provided an extra dataset `tune.pkl` for tuning. Then I have another dataset that I will upload to the repo during the session `test.pkl` which we'll use to score your model to see who wins :).
+- I've provided an example file `example.py` which shows you how I did things for reference.

@@ -9,13 +9,14 @@ from sklearn.decomposition import LatentDirichletAllocation as LDA
 
 
 def fit_lda():
-    train, test, idx2words = bow_from_docs()
-    stepsize = tune_lda(train, test)
+    train, tune, test, idx2words = bow_from_docs()
+    # Tune using perplexity of held out 'tune' set
+    stepsize = tune_lda(train, tune)
     # Run again with best stepsize for longer
     print "Training full model..."
     m = LDA(learning_method = 'batch', max_iter = 100)
     m.fit(train)
-    # Return fitted model and report perplexity on test
+    # Return fitted model and report perplexity on test set
     print "Perplexity of final model: {0}\n".format(m.perplexity(test))
     report_results(m.components_, idx2words)
 
@@ -30,7 +31,7 @@ def report_results(topic_words, idx2words):
 
 def tune_lda(train, test):
     """
-    Find stepsize from a prespecified set that minimizes test perplexity 
+    Find stepsize from a prespecified set that minimizes tune set perplexity 
     (normally we might tune more constants but this serves as a demonstration)
     """
     decays = [0.7, 0.5, 0.1, 0.05, 0.01]
@@ -49,15 +50,16 @@ def tune_lda(train, test):
 
 def bow_from_docs():
     """Create bag of words from train and test documents"""
-    train, test = open_datasets()
-    # Combine train and test set while prepping docs
-    size_test = len(test)
-    dataset = train + test
+    train, tune, test = open_datasets()
+    # Combine train, tune and test set while prepping docs
+    size_train, size_tune, size_test = len(train), len(tune), len(test)
+    dataset = train + tune + test
     dataset, idx2words = prep_docs(dataset)
     # Resplit train and test set ready for training
-    train = dataset[:-size_test]
-    test = dataset[-size_test:]
-    return train, test, idx2words
+    train = dataset[:size_train]
+    tune = dataset[size_train:(size_train + size_tune)]
+    test = dataset[(size_train + size_test):]
+    return train, tune, test, idx2words
 
 
 def prep_docs(docs):
@@ -84,9 +86,14 @@ def clean_doc(doc, stopws):
 def open_datasets():
     with open('docs.pkl', 'rb') as infile:
         train = pickle.load(infile)
-    with open('test.pkl', 'rb') as infile:
-        test = pickle.load(infile)
-    return train, test
+    with open('tune.pkl', 'rb') as infile:
+        tune = pickle.load(infile)
+    try:
+        with open('test.pkl', 'rb') as infile:
+            test = pickle.load(infile)
+    except IOError:
+        raise IOError("Test set not live yet!")
+    return train, tune, test
 
 
 if __name__ == '__main__':
