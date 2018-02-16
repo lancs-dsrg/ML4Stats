@@ -33,11 +33,7 @@ def grab_page(retries = 5):
     return page
 
 if __name__ == '__main__':
-#    docs = scrape_wiki()
-#    # Output to python's data file
-#    with open("docs.pkl", 'wb') as out:
-#        pickle.dump(docs, out)
-    # Generate and store a set of test documents
-    test = scrape_wiki(n = 200)
-    with open("test.pkl", 'wb') as out:
-        pickle.dump(test, out)
+    docs = scrape_wiki()
+    # Output to python's data file
+    with open("docs.pkl", 'wb') as out:
+        pickle.dump(docs, out)
