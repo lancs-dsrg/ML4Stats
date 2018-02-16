@@ -4,6 +4,7 @@ import cPickle as pickle
 import re
 import sys
 from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation as LDA
 
@@ -79,8 +80,11 @@ def clean_doc(doc, stopws):
     doc = re.sub(r'-', ' ', doc)
     doc = re.sub(r'[^a-z ]', '', doc)
     doc = re.sub(r' +', ' ', doc)
-    # Split document to words and remove stopwords, rejoin
-    return " ".join([word for word in doc.split() if word not in stopws])
+    # Split document to words, remove stopwords
+    words = [word for word in doc.split() if word not in stopws]
+    # Stem words, this removes endings like *ing and *ed
+    stemmer = PorterStemmer()
+    return " ".join([stemmer.stem(word) for word in words])
 
 
 def open_datasets():
